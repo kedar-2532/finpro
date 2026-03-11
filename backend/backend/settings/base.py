@@ -38,6 +38,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'apps.accounts',
+    'apps.transactions',
+    'apps.analytics',
+    'apps.emi',
 ]
 
 MIDDLEWARE = [
@@ -116,3 +120,18 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES' :
+        ('rest_framework_simplejwt.authentication.JWTAuthentication',),
+}
+
+AUTH_USER_MODEL = 'accounts.User'
+
+from datetime import timedelta
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'AUTH_HEADER_TYPES':('BEARER',),
+}

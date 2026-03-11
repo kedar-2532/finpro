@@ -20,8 +20,7 @@ from django.http import JsonResponse
 from rest_framework_simplejwt.views import (TokenObtainPairView,TokenRefreshView,)
 
 
-
 urlpatterns = [
     path('admin/', admin.site.urls),
-
+    path('api/auth/', include('apps.accounts.urls')),
 ]
