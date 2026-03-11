@@ -6,7 +6,7 @@ ALLOWED_HOSTS = ['127.0.0.1','localhost']
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'finance_risk_db',
+        'NAME': 'finpro_db',
         'USER': 'root',
         'PASSWORD': 'root',
         'HOST': '127.0.0.1',
