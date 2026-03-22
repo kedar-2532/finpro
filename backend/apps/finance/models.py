@@ -30,7 +30,7 @@ class Category(models.Model):
         return self.name
 
 
-class Transaction:
+class Transaction(models.Model):
     TRANSACTION_TYPE_CHOICES = (
         ('INCOME', 'Income'),
         ('EXPENSE', 'Expense'),
