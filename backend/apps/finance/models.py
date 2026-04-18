@@ -4,17 +4,16 @@ from django.db import models
 class Account(models.Model):
     ACCOUNT_TYPE_CHOICES = (
         ('BANK', 'Bank'),
-        ('WALLET', 'Wallet'),
         ('CREDIT', 'Credit'),
     )
     user = models.ForeignKey('accounts.User', on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
-    balance = models.DecimalField(max_digits=12, decimal_places=2)
+    balance = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     account_type = models.CharField(max_length=10, choices=ACCOUNT_TYPE_CHOICES)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.name} - {self.user.email}"
+        return self.name
 
 
 class Category(models.Model):
@@ -24,7 +23,7 @@ class Category(models.Model):
     )
     user = models.ForeignKey('accounts.User', on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
-    account_type = models.CharField(max_length=10, choices=CATEGORY_TYPE_CHOICES)
+    category_type = models.CharField(max_length=10, choices=CATEGORY_TYPE_CHOICES)
 
     def __str(self):
         return self.name

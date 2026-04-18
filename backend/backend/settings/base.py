@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'apps.accounts',
     'apps.transactions',
-    'apps.finance',
+    'apps.finance.apps.FinanceConfig',
     'apps.analytics',
     'apps.emi',
 

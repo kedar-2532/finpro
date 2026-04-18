@@ -1,8 +1,9 @@
-from django.urls import path
-from .views import (AccountListCreateView, CategoryListCreateView, TransactionListCreateView)
+from rest_framework.routers import DefaultRouter
+from .views import AccountViewSet, CategoryViewSet, TransactionViewSet
 
-urlpatterns = [
-    path('accounts/', AccountListCreateView.as_view()),
-    path('categories/', CategoryListCreateView.as_view()),
-    path('transactions/', TransactionListCreateView.as_view()),
-]
+router = DefaultRouter()
+router.register('accounts', AccountViewSet, basename='accounts')
+router.register('categories', CategoryViewSet, basename='categories')
+router.register('transactions', TransactionViewSet, basename='transactions')
+
+urlpatterns = router.urls

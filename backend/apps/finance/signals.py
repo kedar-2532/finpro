@@ -4,14 +4,18 @@ from .models import Transaction, Account
 
 @receiver(post_save, sender=Transaction)
 def update_account_balance_on_create(sender, instance, created, **kwargs):
+    if not created:
+        return
+
     account = instance.account
+
     if created:
         if instance.transaction_type == 'INCOME':
             account.balance += instance.account
         else:
             account.balance -= instance.account
         account.save()
-
+    print("SIGNAL TRIGGERED:", instance.amount)
 @receiver(post_save, sender=Transaction)
 def update_account_balance_on_update(sender, instance, **kwargs):
     if not instance.pk:
