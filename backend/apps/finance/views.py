@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from rest_framework import viewsets,permissions
-from .models import Account, Category, Transaction
-from .serializers import  AccountSerializer, CategorySerializer, TransactionSerializer
+from .models import Account, Category, Transaction, Budget
+from .serializers import  AccountSerializer, CategorySerializer, TransactionSerializer, BudgetSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -143,4 +143,160 @@ class IncomeExpenseChartAPIView(APIView):
             "expense": float(expense),
             "net_savings": float(income - expense)
         }
+        return Response(data)
+
+class BudgetViewSet(viewsets.ModelViewSet):
+    serializer_class = BudgetSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Budget.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+class BudgetSummaryAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self,request):
+        user = request.user
+
+        budgets = Budget.objects.filter(user=user)
+        result = []
+
+        for budget in budgets:
+            spent = Transaction.objects.filter(
+                user=user,
+                category=budget.category,
+                transaction_type="EXPENSE",
+                date__month=budget.month,
+                date__year=budget.year
+            ).aggregate(total=Sum('amount'))['total'] or 0
+
+            remaining = budget.monthly_limit - spent
+
+            status = "SAFE"
+            if spent > budget.monthly_limit:
+                status = "OVERSPENT"
+
+            result.append({
+                'category': budget.category.name,
+                'monthly_limit': float(budget.monthly_limit),
+                'spent': float(spent),
+                'remaining': float(remaining),
+                'status': status
+            })
+        return Response(result)
+    
+class AlertsAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def get(self,request):
+        user = request.user
+        alerts = []
+        # Overspent
+        budgets = Budget.objects.filter(user=user)
+        
+        for budget in budgets:
+            spent = Transaction.objects.filter(
+                user=user,
+                category=budget.category,
+                transaction_type='EXPENSE',
+                date__month=budget.month,
+                date__year=budget.year
+            ).aggregate(total=Sum('amount'))['total'] or 0
+            
+            if spent > budget.monthly_limit:
+                alerts.append(f"Budget exceeded for {budget.category.name} category")
+        # Income/Expense
+        income = Transaction.objects.filter(
+            user=user,
+            transaction_type='INCOME'
+        ).aggregate(total=Sum('amount'))['total'] or 0
+        
+        expense = Transaction.objects.filter(
+            user=user,
+            transaction_type='EXPENSE'
+        ).aggregate(total=Sum("amount"))['total'] or 0
+        
+        if expense > income:
+            alerts.append('Expenses are higher than Income')
+        
+        if income > 0:
+            savings_rate = ((income - expense) / income) * 100
+            if savings_rate < 20:
+                alerts.append("Savings rate is below safe threshold")
+        
+        return Response(alerts)
+
+class RiskScoreAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self,request):
+        user = request.user
+
+        income = Transaction.objects.filter(
+            user=user,
+            transaction_type='INCOME'
+        ).aggregate(total=Sum('amount'))['total'] or 0
+
+        expense = Transaction.objects.filter(
+            user=user,
+            transaction_type='EXPENSE'
+        ).aggregate(total=Sum('amount'))['total'] or 0
+
+        budget_count = Budget.objects.filter(user=user).count()
+        overspent_count = 0
+
+        for budget in Budget.objects.filter(user=user):
+            spent = Transaction.objects.filter(
+                user=user,
+                category=budget.category,
+                transaction_type='EXPENSE',
+                date__month=budget.month,
+                date__year=budget.year
+            ).aggregate(total=Sum('amount'))['total'] or 0
+
+            if spent > budget.monthly_limit:
+                overspent_count += 1
+
+        risk_score = 0
+
+        if income > 0:
+            expense_ratio = (expense / income) * 100
+            savings_rate = ((income - expense) / income) * 100
+        else:
+            expense_ratio = 100
+            savings_rate = 0
+
+        if expense_ratio > 80:
+            risk_score += 40
+        elif expense_ratio > 50:
+            risk_score += 25
+        elif expense_ratio > 30:
+            risk_score += 10
+
+        if budget_count > 0:
+            risk_score +=overspent_count * 15
+
+        if savings_rate < 20:
+            risk_score += 30
+        elif savings_rate <40:
+            risk_score += 15
+
+        if risk_score <=25:
+            level = 'LOW'
+        elif risk_score <=60:
+            level = 'MEDIUM'
+        else:
+            level = 'HIGH'
+
+        data = {
+            'risk_score': risk_score,
+            'risk_level': level,
+            'income': float(income),
+            'expense': float(expense),
+            'saving_rate': round(float(savings_rate),2)
+        }
+
         return Response(data)
