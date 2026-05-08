@@ -35,7 +35,26 @@ class TransactionViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return Transaction.objects.filter(user=self.request.user)
+        queryset = Transaction.objects.filter(user=self.request.user)
+
+        month = self.request.query_params.get('month')
+        year = self.request.query_params.get('year')
+        category = self.request.query_params.get('category')
+        transaction_type = self.request.query_params.get('transaction_type')
+
+        if month:
+            queryset = queryset.filter(date__month=month)
+
+        if year:
+            queryset = queryset.filter(date__year=year)
+
+        if category:
+            queryset = queryset.filter(category_id=category)
+
+        if transaction_type:
+            queryset = queryset.filter(transaction_type=transaction_type)
+
+        return queryset.order_by('-date')
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
@@ -300,3 +319,85 @@ class RiskScoreAPIView(APIView):
         }
 
         return Response(data)
+
+class AIInsightsAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self,request):
+        user = request.user
+
+        insights = []
+
+        income = Transaction.objects.filter(
+            user=user,
+            transaction_type="INCOME"
+        ).aggregate(total=Sum('amount'))['total'] or 0
+
+        expense = Transaction.objects.filter(
+            user=user,
+            transaction_type='EXPENSE'
+        ).aggregate(total=Sum('amount'))['total'] or 0
+
+        if income > 0:
+            savings_rate = ((income - expense) / income) * 100
+        else:
+            savings_rate = 0
+
+        if savings_rate >= 50:
+            insights.append(f"Your savings rate is excellent at {round(savings_rate, 2)}%.")
+        elif savings_rate >= 20:
+            insights.append(f"Your savings rate is moderate at {round(savings_rate, 2)}%.")
+        else:
+            insights.append(f"Your savings rate is low at {round(savings_rate, 2)}%.")
+
+        overspent = False
+
+        budgets = Budget.objects.filter(user=user)
+
+        for budget in budgets:
+            spent = Transaction.objects.filter(
+                user=user,
+                category=budget.category,
+                transaction_type='EXPENSE',
+                date__month=budget.month,
+                date__year=budget.year
+            ).aggregate(total=Sum('amount'))['total'] or 0
+
+            if spent > budget.monthly_limit:
+                overspent = True
+
+        if overspent:
+            insights.append('You have exceeded budget limits in some categories.')
+        else:
+            insights.append('NO budget overspending detected.')
+
+        risk_score = 0
+
+        if income > 0:
+            expense_ratio = (expense / income) * 100
+        else:
+            expense_ratio = 100
+
+        if expense_ratio > 80:
+            risk_score += 40
+        elif expense_ratio > 50:
+            risk_score += 25
+
+        if savings_rate < 20:
+            risk_score += 30
+
+        if risk_score <= 25:
+            risk_level = 'LOW'
+        elif risk_score <= 60:
+            risk_level = 'MEDIUM'
+        else:
+            risk_level = 'HIGH'
+
+        insights.append(f'Your financial risk level is {risk_level}.')
+
+        if income > expense:
+            insights.append('Your income flow is healthy.')
+        else:
+            insights.append('Your expenses are exceeding your income.')
+
+        return Response(insights)

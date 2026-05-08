@@ -1,6 +1,6 @@
 from django.urls import path
 from rest_framework.routers import DefaultRouter
-from .views import AccountViewSet, CategoryViewSet, TransactionViewSet, DashboardAPIView, MonthlySummaryAPIView, CategorySummaryAPIView, IncomeExpenseChartAPIView, BudgetViewSet, BudgetSummaryAPIView, AlertsAPIView, RiskScoreAPIView
+from .views import AccountViewSet, CategoryViewSet, TransactionViewSet, DashboardAPIView, MonthlySummaryAPIView, CategorySummaryAPIView, IncomeExpenseChartAPIView, BudgetViewSet, BudgetSummaryAPIView, AlertsAPIView, RiskScoreAPIView, AIInsightsAPIView
 
 router = DefaultRouter()
 router.register('accounts', AccountViewSet, basename='accounts')
@@ -17,4 +17,5 @@ urlpatterns += [
     path('budget-summary/', BudgetSummaryAPIView.as_view(), name='budget-summary'),
     path('alerts/', AlertsAPIView.as_view(), name='alerts'),
     path('risk-score/', RiskScoreAPIView.as_view(), name='risk-score'),
+    path('ai-insights/', AIInsightsAPIView.as_view(), name='ai-insights'),
 ]
