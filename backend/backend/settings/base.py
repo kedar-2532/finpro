@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'apps.finance.apps.FinanceConfig',
     'apps.analytics',
     'apps.emi',
+    'apps.core',
 
 ]
 
@@ -128,9 +129,12 @@ REST_FRAMEWORK = {
         ('rest_framework_simplejwt.authentication.JWTAuthentication',),
 
     'DEFAULT_PAGINATION_CLASS':
-            'rest_framework.pagination.PageNumberPagination',
+        'rest_framework.pagination.PageNumberPagination',
 
     'PAGE_SIZE': 5,
+
+    'EXCEPTION_HANDLER':
+        'apps.core.exceptions.custom_exception_handler',
 }
 
 AUTH_USER_MODEL = 'accounts.User'
