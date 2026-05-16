@@ -2,8 +2,9 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import Login from '../pages/auth/Login';
 import Register from "../pages/auth/Register";
+import Dashboard from "../pages/dashboard/Dashboard";
 
-function AppRouters() {
+function AppRoutes() {
     return(
         <BrowserRouter>
             <Routes>
@@ -12,10 +13,12 @@ function AppRouters() {
                 
                 <Route path="/register" element={<Register />} />
             
+                <Route path="/dashboard" element={<Dashboard />} />
+                
             </Routes>
         
         </BrowserRouter>
     );
 }
 
-export default AppRouters;
+export default AppRoutes;
