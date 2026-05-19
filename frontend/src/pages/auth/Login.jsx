@@ -1,64 +1,73 @@
-import { useState, useContext } from 'react';
+import { useState } from "react";
 import { useNavigate } from 'react-router-dom';
-import { loginUser } from '../../services/AuthService';
-import { AuthContext } from '../../context/AuthContext';
-
 
 function Login() {
-  const navigate = useNavigate();
 
-  const { login } = useContext(AuthContext);
+  const [formData, setFormData] = useState({
+    email: "", 
+    password: "",
 
-  const [formData, setformData] = useState({
-    email: '',
-    password: '',
   });
 
-  const handelChange = (e) => {
-    setformData({
-      ...FormData,
+  const navigate = useNavigate();
+  
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
       [e.target.name]: e.target.value,
     });
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefualt();
 
-    console.log('FORM SUBMITTED');
+  e.preventDefault();
 
-    try {
-      console.log('Sending Request');
+  try {
 
-      const response = await loginUser(formData);
+    const response = await fetch(
+      "http://127.0.0.1:8000/api/auth/login/",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      }
+    );
 
-      login(response.access);
+    const data = await response.json();
 
-      alert('Login Successful');
+    console.log(data);
 
-      navigate('/dashboard');
+    localStorage.setItem("access", data.access);
 
-    } catch (error) {
+    alert("Login Successful");
 
-      console.log('ERROR:', error);
+    navigate("/dashboard");
 
-      console.log('ERROR RESPONSE:',error.response);
+  } catch (error) {
 
-      alert('Invalid Credentials');
-    }
-  };
+    console.log(error);
+
+    alert("Login Failed");
+  }
+};
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+    <div className="min-h-screen flex items-center justify-center">
 
-      <form onSubmit={handleSubmit} className='bg-white p-8 rounded-xl shadow-lg w-96'>
-        
-        <h2 className='text-3xl font-bold mb-6 text-center'>FinPro Login</h2>
+      <form onSubmit={handleSubmit}>
 
-        <input type="text" name='email' placeholder='Email' className='w-full border p-3 rounded-b-lg' onChange={handelChange} />
+        <input type="email" name="email" placeholder="Email" value={formData.email} onChange={handleChange} />
+        <br /><br />
 
-        <input type="password" name='password' placeholder='Password' className='w-full border p-3 mb-4 rounded-lg' onChange={handelChange} />
+        <input type="password" name="password" placeholder="Password" value={formData.password} onChange={handleChange} />
 
-        <button type='submit' className='w-full bg-blue-600 text-white p-3 rounded-lg'>Login</button>
+        <br /><br />
+
+        <button type="submit">
+          Login
+        </button>
 
       </form>
 
