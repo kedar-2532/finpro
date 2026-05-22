@@ -151,6 +151,10 @@ SIMPLE_JWT = {
     'AUTH_HEADER_TYPES':('Bearer',),
 }
 
+from corsheaders.defaults import default_headers
+
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:5173',
 ]
+
+CORS_ALLOW_HEADERS = list(default_headers) + ['asthorization',]

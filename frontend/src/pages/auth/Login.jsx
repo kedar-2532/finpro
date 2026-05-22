@@ -37,7 +37,11 @@ function Login() {
 
     const data = await response.json();
 
-    console.log(data);
+    console.log('DATA:',data);
+
+    console.log('STATUS:', response.status);
+
+    if(response.ok) {
 
     localStorage.setItem("access", data.access);
 
@@ -45,9 +49,20 @@ function Login() {
 
     navigate("/dashboard");
 
-  } catch (error) {
+  } else {
+    
+    alert("Invalid Credentails");
+  }
 
-    console.log(error);
+} catch (error) {
+
+    console.log('FULL ERROR:',error);
+
+    if (error.response){
+      console.log('Response Data:', error.respnse.data);
+
+      console.log('Response Status:', error.response.status);
+    }
 
     alert("Login Failed");
   }
