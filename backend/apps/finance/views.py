@@ -174,7 +174,7 @@ class BudgetViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
-class BudgetSummaryAPIView(APIView):
+class  BudgetSummaryAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self,request):
@@ -188,8 +188,8 @@ class BudgetSummaryAPIView(APIView):
                 user=user,
                 category=budget.category,
                 transaction_type="EXPENSE",
-                date__month=budget.month,
-                date__year=budget.year
+                # date__month=budget.month,
+                # date__year=budget.year
             ).aggregate(total=Sum('amount'))['total'] or 0
 
             remaining = budget.monthly_limit - spent

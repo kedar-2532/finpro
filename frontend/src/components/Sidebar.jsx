@@ -33,6 +33,10 @@ function Sidebar() {
                 Analytics
             </Link>
 
+            <Link to='/alerts'>
+                Alerts
+            </Link>
+
             <button onClick={handleLogout} className='bg-red-500 mt-10 p-2 rounded-lg'>
                 Logout
             </button>

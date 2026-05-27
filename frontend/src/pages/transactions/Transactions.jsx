@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 
 import DashboardLayout from '../../layouts/DashboardLayout'
-import { getTransactions, deleteTransaction } from '../../services/transactionService'
+import { getTransactions, deleteTransaction, addTransaction } from '../../services/transactionService'
+import AddTransactionForm from '../../components/AddTransactionForm'
 
 
 function Transactions(){
@@ -35,9 +36,23 @@ catch(error){
 }
 }
 
+async function handleAdd(form) {
+    try{
+        await addTransaction(form)
+        const data = await getTransactions()
+
+        setTransactions(data.results || data)
+    }
+    catch(error){
+        console.log(error)
+    }
+}
+
 return(
     <DashboardLayout>
         <h1 className='text-4xl font-bold mb-6'>Transactions</h1>
+
+        <AddTransactionForm onAdd={handleAdd} />
 
         <div className='bg-white p-5 rounded-xl shodow'>
             <table className='w-full'>
