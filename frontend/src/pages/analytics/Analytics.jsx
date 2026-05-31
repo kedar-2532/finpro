@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 
 import DashboardLayout from "../../layouts/DashboardLayout"
 import MonthlyChart from './MonthlyChart'
+import CategoryPieChart from './CategoryPieChart'
 
 function Analytics(){
     const[risk,setRisk] = useState(null)
@@ -9,6 +10,8 @@ function Analytics(){
     const[insights,setInsights] = useState([])
 
     const[monthlyData,setMonthlyData] = useState([])
+
+    const [categoryData, setCategoryData] = useState([])
 
     useEffect(()=>{
 
@@ -71,7 +74,21 @@ function Analytics(){
             const monthly = await monthlyReponse.json()
             console.log("Mobthly:",monthly)
             setMonthlyData(monthly)
-            
+
+            const categoryResponse = await fetch(
+            'http://127.0.0.1:8000/api/finance/category-summary/',
+            {
+                headers:{
+                    Authorization:`Bearer ${token}`
+                }
+            }
+        );
+
+        const category = await categoryResponse.json()
+
+        console.log('CATEGORY:',category)
+        setCategoryData(category);
+        
         }
         catch(error){
 
@@ -146,7 +163,9 @@ return(
         </div>
 
         <MonthlyChart data={monthlyData} />
-        
+
+        <CategoryPieChart data={categoryData} />
+
     </DashboardLayout>
 )
 }

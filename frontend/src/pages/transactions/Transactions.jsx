@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import toast from 'react-hot-toast';
 
 import DashboardLayout from '../../layouts/DashboardLayout'
 import { getTransactions, deleteTransaction, addTransaction } from '../../services/transactionService'
@@ -30,10 +31,13 @@ try{
     const data = await getTransactions()
     console.log('DATA:',data)
     setTransactions(data.results || data)
+    toast.success('Transaction Deleted');
 }
 catch(error){
+    toast.error("Operation Failed")
     console.log(error)
 }
+
 }
 
 async function handleAdd(form) {
@@ -42,10 +46,14 @@ async function handleAdd(form) {
         const data = await getTransactions()
 
         setTransactions(data.results || data)
+        toast.success('Transaction Added');
     }
     catch(error){
+        toast.error("Operation Failed")
         console.log(error)
     }
+    
+
 }
 
 return(
